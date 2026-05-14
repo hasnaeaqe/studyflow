@@ -1,0 +1,311 @@
+<!-- TOPBAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Vue d'ensemble</div>
+    <div class="topbar-breadcrumb">admin / dashboard</div>
+  </div>
+  <div class="search-box">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input 
+      type="text" 
+      placeholder="Rechercher utilisateurs, activités..." 
+      [(ngModel)]="globalSearchTerm"
+      (input)="onGlobalSearch()"
+    >
+    <button *ngIf="globalSearchTerm" (click)="clearGlobalSearch()" class="clear-search">✕</button>
+  </div>
+  <div class="topbar-actions">
+   <div class="topbar-actions">
+        <div class="icon-btn" routerLink="/admin/notifications" [queryParams]="{ section: 'notifications' }">
+            <svg viewBox="0 0 24 24">
+            <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="badge"></span>
+        </div>
+    </div>
+    <!-- <div class="icon-btn">
+      <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="badge"></span>
+    </div> -->
+    <!-- <button class="btn btn-primary">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Ajouter utilisateur
+    </button> -->
+  </div>
+</div>
+
+
+
+<!-- RÉSULTATS DE RECHERCHE -->
+<div class="search-results-panel" *ngIf="globalSearchTerm && globalSearchTerm.trim() !== ''">
+  <div class="search-results-header">
+    <div class="search-results-icon"></div>
+    <div class="search-results-info">
+      <span class="search-results-term">"{{globalSearchTerm}}"</span>
+      <span class="search-results-badge">{{filteredUsers.length + filteredActivities.length}} résultat(s)</span>
+    </div>
+    <button class="search-results-close" (click)="clearGlobalSearch()">✕</button>
+  </div>
+
+  <div class="search-results-grid">
+    <!-- Colonne Utilisateurs -->
+    <div class="search-results-col">
+      <div class="search-results-col-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Utilisateurs
+        <span class="search-results-col-count">{{filteredUsers.length}}</span>
+      </div>
+      <div class="search-users-list">
+        <div class="search-user-item" *ngFor="let user of filteredUsers">
+          <div class="search-user-avatar" [style.background]="'linear-gradient(135deg, ' + (user.status === 'active' ? 'var(--green)' : 'var(--amber)') + ', var(--accent))'">
+            {{getUserInitials(user.firstName, user.lastName)}}
+          </div>
+          <div class="search-user-details">
+            <div class="search-user-name">{{user.firstName}} {{user.lastName}}</div>
+            <div class="search-user-email">{{user.email}}</div>
+            <div class="search-user-stats">
+              <span>📚 {{user.sessions}} sessions</span>
+              <span>⏱️ {{user.hours}}h</span>
+            </div>
+          </div>
+          <div class="search-user-status">
+            <span class="status-pill" [class]="getStatusClass(user.status)">{{user.status}}</span>
+          </div>
+        </div>
+        <div class="search-empty-state" *ngIf="filteredUsers.length === 0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Aucun utilisateur trouvé</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne Activités -->
+    <div class="search-results-col">
+      <div class="search-results-col-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Activités récentes
+        <span class="search-results-col-count">{{filteredActivities.length}}</span>
+      </div>
+      <div class="search-activities-list">
+        <div class="search-activity-item" *ngFor="let activity of filteredActivities">
+          <div class="search-activity-icon" [style.background]="activity.action.includes('session') ? 'var(--accent-dim)' : 'var(--green-dim)'">
+            <span>{{activity.action.includes('session') ? '📖' : '🎯'}}</span>
+          </div>
+          <div class="search-activity-content">
+            <div class="search-activity-text">
+              <strong>{{activity.user}}</strong> {{activity.action}}
+            </div>
+            <div class="search-activity-time">{{activity.time}}</div>
+          </div>
+        </div>
+        <div class="search-empty-state" *ngIf="filteredActivities.length === 0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Aucune activité trouvée</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- CONTENT -->
+<div class="content" *ngIf="!isLoading; else loading">
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Utilisateurs actifs</div>
+        <div class="kpi-icon-box bg-blue"><svg viewBox="0 0 24 24" style="stroke:var(--accent)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      </div>
+      <div class="kpi-val c-blue">{{stats.activeUsers | number}}</div>
+      <div class="kpi-delta c-green">
+        <svg viewBox="0 0 24 24" style="stroke:var(--green)"><polyline points="18 15 12 9 6 15"/></svg>
+        +{{stats.newUsersLast7d}} cette semaine
+      </div>
+      <div class="kpi-stripe" style="background:var(--accent)"></div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Sessions créées</div>
+        <div class="kpi-icon-box bg-green"><svg viewBox="0 0 24 24" style="stroke:var(--green)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      </div>
+      <div class="kpi-val c-green">{{stats.totalSessions | number}}</div>
+      <div class="kpi-delta c-green">
+        <svg viewBox="0 0 24 24" style="stroke:var(--green)"><polyline points="18 15 12 9 6 15"/></svg>
+        +{{stats.sessionsLast7d}} cette semaine
+      </div>
+      <div class="kpi-stripe" style="background:var(--green)"></div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Heures d'étude</div>
+        <div class="kpi-icon-box bg-amber"><svg viewBox="0 0 24 24" style="stroke:var(--amber)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      </div>
+      <div class="kpi-val c-amber">{{stats.totalHoursStudied}}h</div>
+      <div class="kpi-delta c-green">
+        <svg viewBox="0 0 24 24" style="stroke:var(--green)"><polyline points="18 15 12 9 6 15"/></svg>
+        +23% vs mois dernier
+      </div>
+      <div class="kpi-stripe" style="background:var(--amber)"></div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Comptes suspendus</div>
+        <div class="kpi-icon-box bg-red"><svg viewBox="0 0 24 24" style="stroke:var(--red)"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+      </div>
+      <div class="kpi-val c-red">{{stats.bannedUsers}}</div>
+      <div class="kpi-delta c-red">
+        <svg viewBox="0 0 24 24" style="stroke:var(--red)"><polyline points="18 9 12 15 6 9"/></svg>
+        +3 nouveaux
+      </div>
+      <div class="kpi-stripe" style="background:var(--red)"></div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Activité hebdomadaire</div>
+          <div class="card-sub">Sessions créées &amp; heures enregistrées — 7 derniers jours</div>
+        </div>
+        <span class="chip chip-green">En direct</span>
+      </div>
+      <div class="bar-chart-wrap">
+        <div class="bar-col" *ngFor="let day of ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']">
+          <div class="bar-pair">
+            <div class="bar" [style.height]="'60%'" style="background:var(--accent);opacity:0.6"></div>
+            <div class="bar" [style.height]="'48%'" style="background:var(--green);opacity:0.6"></div>
+          </div>
+          <div class="bar-day">{{day}}</div>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Sessions</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Heures d'étude</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Matières</div>
+          <div class="card-sub">Répartition globale</div>
+        </div>
+      </div>
+      <div class="donut-container">
+        <div class="donut-svg-wrap">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--dark-4)" stroke-width="20"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="20" stroke-dasharray="131.9 314" stroke-dashoffset="78.5" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--green)" stroke-width="20" stroke-dasharray="87.9 314" stroke-dashoffset="-53.4" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--amber)" stroke-width="20" stroke-dasharray="47.1 314" stroke-dashoffset="-141.3" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="donut-center-text">
+            <div class="donut-center-val c-blue">85%</div>
+            <div class="donut-center-lab">COUVERTURE</div>
+          </div>
+        </div>
+        <div class="donut-legend-row">
+          <div class="dl-item"><div class="dl-dot" style="background:var(--accent)"></div><span class="dl-label">Mathématiques</span><span class="dl-pct c-blue">42%</span></div>
+          <div class="dl-item"><div class="dl-dot" style="background:var(--green)"></div><span class="dl-label">Informatique</span><span class="dl-pct c-green">28%</span></div>
+          <div class="dl-item"><div class="dl-dot" style="background:var(--amber)"></div><span class="dl-label">Physique</span><span class="dl-pct c-amber">15%</span></div>
+          <div class="dl-item"><div class="dl-dot" style="background:var(--dark-5)"></div><span class="dl-label">Autres</span><span class="dl-pct" style="color:var(--text-3)">15%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  TABLEAU UTILISATEURS
+  <div class="bottom-row">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Gestion des utilisateurs</div>
+          <div class="card-sub">{{stats.totalUsers}} comptes enregistrés</div>
+        </div>
+        <span class="chip chip-blue">Filtrage actif</span>
+      </div>
+      <div class="table-header">
+        <div class="search-mini">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input 
+            type="text" 
+            placeholder="Nom, email..." 
+            [(ngModel)]="searchTerm"
+            (input)="filterUsers()"
+          >
+        </div>
+        <select class="filter-sel" [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+          <option value="tous">Tous les statuts</option>
+          <option value="active">Actif</option>
+          <option value="inactive">Inactif</option>
+          <option value="banned">Suspendu</option>
+        </select>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Utilisateur</th><th>Sessions</th><th>Heures</th><th>Inscription</th><th>Statut</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers">
+            <td>
+              <div class="user-cell">
+                <div class="cell-av" [style.background]="'linear-gradient(135deg, var(--accent), var(--green))'">{{getUserInitials(user.firstName, user.lastName)}}</div>
+                <div><div class="cell-name">{{user.firstName}} {{user.lastName}}</div><div class="cell-email">{{user.email}}</div></div>
+              </div>
+            </td>
+            <td><span class="mono-val">{{user.sessions}}</span></td>
+            <td><span class="mono-val">{{user.hours}}h</span></td>
+            <td><span class="mono-val">{{user.registeredAt | date:'MMM yyyy'}}</span></td>
+            <td><span class="status-pill" [class]="getStatusClass(user.status)">{{user.status}}</span></td>
+            <!-- <td><button class="row-btn">Détails</button></td> -->
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <!-- ACTIVITÉ RÉCENTE -->
+      <div class="card" style="flex:1">
+        <div class="card-head">
+          <div><div class="card-title">Activité récente</div><div class="card-sub">Événements système</div></div>
+        </div>
+        <div class="feed-list">
+          <div class="feed-item" *ngFor="let activity of filteredActivities">
+            <div class="feed-icon" style="background:var(--green-dim)">
+              <svg viewBox="0 0 24 24" style="stroke:var(--green)"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div class="feed-body-text"><strong>{{activity.user}}</strong> {{activity.action}}</div>
+              <div class="feed-time">{{activity.time}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRESSION MATIÈRES -->
+      <div class="card">
+        <div class="card-head" style="margin-bottom:16px"><div class="card-title">Progression par matière</div></div>
+        <div class="prog-list">
+          <div class="prog-item" *ngFor="let subject of subjectProgress">
+            <div class="prog-row"><span class="prog-name">{{subject.name}}</span><span class="prog-num">{{subject.percentage}}%</span></div>
+            <div class="prog-track"><div class="prog-fill" [style.width]="subject.percentage + '%'" [style.background]="subject.color"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="content" style="display:flex;justify-content:center;align-items:center;height:100%">
+    <div>Chargement du tableau de bord...</div>
+  </div>
+</ng-template>

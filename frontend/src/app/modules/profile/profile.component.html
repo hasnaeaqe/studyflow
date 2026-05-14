@@ -1,0 +1,45 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        {{user.firstName?.charAt(0)}}{{user.lastName?.charAt(0)}}
+      </div>
+      <h1>Mon profil</h1>
+      <p>Gérez vos informations personnelles</p>
+    </div>
+
+    <div *ngIf="successMessage" class="alert-success">{{successMessage}}</div>
+    <div *ngIf="errorMessage" class="alert-error">{{errorMessage}}</div>
+
+    <div class="profile-form">
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" [(ngModel)]="user.firstName" [disabled]="!isEditing">
+      </div>
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" [(ngModel)]="user.lastName" [disabled]="!isEditing">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="user.email" disabled>
+      </div>
+      <div class="form-group">
+        <label>Rôle</label>
+        <input type="text" [value]="user.role" disabled>
+      </div>
+
+      <div class="profile-actions">
+        <button *ngIf="!isEditing" class="btn-edit" (click)="toggleEdit()">
+          Modifier mon profil
+        </button>
+        <button *ngIf="isEditing" class="btn-save" (click)="saveProfile()">
+          Enregistrer
+        </button>
+        <button *ngIf="isEditing" class="btn-cancel" (click)="toggleEdit()">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

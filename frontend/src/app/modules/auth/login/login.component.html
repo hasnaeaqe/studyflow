@@ -1,0 +1,80 @@
+<div class="auth-container">
+  <div class="auth-glow"></div>
+  
+  <div class="auth-card">
+    <a routerLink="/landing" class="back-home">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Retour à l'accueil
+    </a>
+
+    <div class="auth-header">
+      <div class="auth-logo">
+        <div class="auth-logo-mark">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        StudyFlow
+      </div>
+      <h1>Bienvenue </h1>
+      <p>Connectez-vous à votre espace d'étude</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input 
+          type="email" 
+          [(ngModel)]="loginData.email" 
+          name="email"
+          class="form-control" 
+          placeholder="exemple@etudiant.ma"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input 
+          type="password" 
+          [(ngModel)]="loginData.password" 
+          name="password"
+          class="form-control" 
+          placeholder="••••••••"
+          required>
+      </div>
+
+      <div class="form-options">
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="loginData.rememberMe" name="rememberMe">
+          <span>Se souvenir de moi</span>
+        </label>
+        <a href="#" class="forgot-link" (click)="$event.preventDefault()">Mot de passe oublié ?</a>
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Se connecter</span>
+        <span *ngIf="isLoading">Connexion en cours...</span>
+      </button>
+
+      <div class="error-message" *ngIf="errorMessage">
+        ⚠️ {{ errorMessage }}
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      <p>Pas encore de compte ? <a routerLink="/register">Créer un compte gratuit </a></p>
+    </div>
+
+    <!-- <div class="demo-accounts">
+      <p class="demo-title">Comptes de démonstration</p>
+      <div class="demo-buttons">
+        <button class="demo-btn student" (click)="loginData.email='etudiant@studyflow.com'; loginData.password='password'">
+          Étudiant
+        </button>
+        <button class="demo-btn admin" (click)="loginData.email='admin@studyflow.com'; loginData.password='admin123'">
+          Administrateur
+        </button>
+      </div> -->
+    <!-- </div> -->
+  </div>
+</div>

@@ -1,0 +1,27 @@
+:root {
+  --black: #080a0e;
+  --dark-1: #0d1017;
+  --dark-2: #121620;
+  --dark-3: #181d28;
+  --dark-4: #1e2433;
+  --border: rgba(255,255,255,0.06);
+  --border-md: rgba(255,255,255,0.10);
+  --text: #f0f2f7;
+  --text-2: #8b93a8;
+  --text-3: #525a6e;
+  --accent: #4f8ef7;
+  --green: #22d07a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+}

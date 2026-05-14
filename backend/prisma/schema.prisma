@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email           String      @unique @db.VarChar(255)
+  password_hash   String
+  firstName       String      @map("first_name") @db.VarChar(100)
+  lastName        String      @map("last_name") @db.VarChar(100)
+  avatarUrl       String?     @map("avatar_url")
+  role            user_role   @default(user)
+  status          user_status @default(pending)
+  xpPoints        Int         @default(0) @map("xp_points")
+  level           Int         @default(1)
+  streakDays      Int         @default(0) @map("streak_days")
+  lastActiveDate  DateTime?   @map("last_active_date") @db.Date
+  weeklyGoalHours Decimal     @default(10.00) @map("weekly_goal_hours") @db.Decimal(5, 2)
+  timezone        String      @default("Africa/Casablanca") @db.VarChar(60)
+  emailVerified   Boolean     @default(false) @map("email_verified")
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?   @map("deleted_at") @db.Timestamptz(6)
+
+  // Relations
+  subjects        Subject[]
+  studySessions   StudySession[]
+  availabilities  Availability[]
+  notifications   Notification[]
+  refreshTokens   RefreshToken[]
+  groupMembers    GroupMember[]
+  messages        GroupMessage[]
+  ownedGroups     StudyGroup[] @relation("GroupCreator")
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@map("users")
+}
+
+model Subject {
+  id          String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId      String         @map("user_id") @db.Uuid
+  name        String         @db.VarChar(150)
+  description String?
+  color       String         @default("#4f8ef7") @db.VarChar(7)
+  icon        String?        @db.VarChar(50)
+  priority    priority_level @default(medium)
+  isActive    Boolean        @default(true) @map("is_active")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studySessions StudySession[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("subjects")
+}
+
+model StudySession {
+  id                 String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId             String          @map("user_id") @db.Uuid
+  subjectId          String?         @map("subject_id") @db.Uuid
+  weekly_schedule_id String?         @db.Uuid
+  title              String          @db.VarChar(255)
+  description        String?
+  sessionType        session_type    @default(solo) @map("session_type")
+  status             session_status  @default(planned)
+  priority           priority_level  @default(medium)
+  location           String?         @db.VarChar(255)
+  is_online          Boolean         @default(false)
+  meeting_url        String?
+  plannedStart       DateTime        @map("planned_start") @db.Timestamptz(6)
+  plannedEnd         DateTime        @map("planned_end") @db.Timestamptz(6)
+  actualStart        DateTime?       @map("actual_start") @db.Timestamptz(6)
+  actualEnd          DateTime?       @map("actual_end") @db.Timestamptz(6)
+  notes              String?
+  productivityRating Int?            @map("productivity_rating") @db.SmallInt
+  deletedAt          DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject? @relation(fields: [subjectId], references: [id])
+
+  @@index([userId])
+  @@index([subjectId])
+  @@index([status])
+  @@index([plannedStart])
+  @@map("study_sessions")
+}
+
+model Availability {
+  id        String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  day       day_of_week
+  startTime DateTime     @map("start_time") @db.Time(6)
+  endTime   DateTime     @map("end_time") @db.Time(6)
+  isActive  Boolean      @default(true) @map("is_active")
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("availabilities")
+}
+
+model StudyGroup {
+  id             String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdBy      String        @map("created_by") @db.Uuid
+  name           String        @db.VarChar(150)
+  description    String?
+  avatarUrl      String?       @map("avatar_url")
+  color          String        @default("#1fc87a") @db.VarChar(7)
+  subject_id     String?       @db.Uuid
+  isPublic       Boolean       @default(false) @map("is_public")
+  maxMembers     Int           @default(20) @map("max_members")
+  invitationCode String?       @unique @map("invitation_code") @db.VarChar(12)
+  isActive       Boolean       @default(true) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator  User           @relation("GroupCreator", fields: [createdBy], references: [id])
+  members  GroupMember[]
+  messages GroupMessage[]
+
+  @@index([createdBy])
+  @@map("study_groups")
+}
+
+model GroupMember {
+  id        String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  groupId   String            @map("group_id") @db.Uuid
+  userId    String            @map("user_id") @db.Uuid
+  role      group_member_role @default(member)
+  joinedAt  DateTime          @default(now()) @map("joined_at") @db.Timestamptz(6)
+  invitedBy String?           @map("invited_by") @db.Uuid
+  isActive  Boolean           @default(true) @map("is_active")
+
+  group StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model GroupMessage {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  groupId   String   @map("group_id") @db.Uuid
+  senderId  String   @map("sender_id") @db.Uuid
+  content   String
+  replyToId String?  @map("reply_to_id") @db.Uuid
+  isDeleted Boolean  @default(false) @map("is_deleted")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  editedAt  DateTime? @map("edited_at") @db.Timestamptz(6)
+
+  group  StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender User       @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt(sort: Desc)])
+  @@index([senderId])
+  @@map("group_messages")
+}
+
+model Notification {
+  id           String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId       String            @map("user_id") @db.Uuid
+  type         notification_type
+  title        String            @db.VarChar(255)
+  body         String
+  data         Json?
+  isRead       Boolean           @default(false) @map("is_read")
+  scheduledFor DateTime?         @map("scheduled_for") @db.Timestamptz(6)
+  sentAt       DateTime?         @map("sent_at") @db.Timestamptz(6)
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([type])
+  @@map("notifications")
+}
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  revoked   Boolean  @default(false)
+  ipAddress String?  @map("ip_address") @db.Inet
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ENUMS (en minuscules pour correspondre à PostgreSQL)
+enum user_role {
+  admin
+  user
+}
+
+enum user_status {
+  active
+  inactive
+  banned
+  pending
+}
+
+enum priority_level {
+  low
+  medium
+  high
+  critical
+}
+
+enum session_type {
+  solo
+  group
+}
+
+enum session_status {
+  planned
+  in_progress
+  completed
+  cancelled
+  missed
+}
+
+enum day_of_week {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
+enum group_member_role {
+  owner
+  moderator
+  member
+}
+
+enum notification_type {
+  session_reminder
+  group_invitation
+  goal_achieved
+  session_comment
+  group_session_created
+  member_joined
+  session_cancelled
+  weekly_report
+}
+
+// backend/prisma/schema.prisma
+// Ajoute ce modèle à la fin du fichier
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  type      String   // user_action, session, group, notification, error
+  severity  String   // info, warning, error
+  message   String
+  userId    String?  @map("user_id")
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@map("system_logs")
+}

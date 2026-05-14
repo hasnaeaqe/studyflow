@@ -1,0 +1,249 @@
+.logs-page {
+  padding: 24px 32px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  color: var(--text-2, #7e8799);
+  font-size: 0.8rem;
+}
+
+.stats-summary {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+
+.stat-badge.info {
+  background: var(--accent-dim, rgba(79,142,247,0.12));
+  color: var(--accent, #4f8ef7);
+}
+
+.stat-badge.warning {
+  background: var(--amber-dim, rgba(245,166,35,0.12));
+  color: var(--amber, #f5a623);
+}
+
+.stat-badge.error {
+  background: var(--red-dim, rgba(240,75,111,0.12));
+  color: var(--red, #f04b6f);
+}
+
+.stat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.info-dot { background: var(--accent); }
+.warning-dot { background: var(--amber); }
+.error-dot { background: var(--red); }
+
+.stat-badge strong {
+  font-weight: 700;
+}
+
+/* Filtres */
+.filters-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--dark-3, #161b29);
+  border: 1px solid var(--border, rgba(255,255,255,0.055));
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 42px;
+  min-width: 250px;
+}
+
+.search-box svg {
+  stroke: var(--text-3, #454d62);
+  flex-shrink: 0;
+}
+
+.search-box input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text, #eceef5);
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.search-box input::placeholder {
+  color: var(--text-3);
+}
+
+.filter-select {
+  background: var(--dark-3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 42px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* Table */
+.logs-table-container {
+  background: var(--dark-2, #10141f);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow-x: auto;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.logs-table th {
+  text-align: left;
+  padding: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+}
+
+.logs-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.logs-table tr:last-child td {
+  border-bottom: none;
+}
+
+.logs-table tr:hover td {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Severity badge */
+.severity-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.severity-info {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.severity-warning {
+  background: var(--amber-dim);
+  color: var(--amber);
+}
+
+.severity-error {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+/* Type tag */
+.type-tag {
+  font-size: 0.7rem;
+  color: var(--text-2);
+}
+
+/* Message */
+.message-text {
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* IP */
+.ip-value {
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: var(--text-2);
+}
+
+/* Date */
+.date-value {
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: var(--text-2);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-3);
+}
+
+.empty-state svg {
+  margin-bottom: 16px;
+  stroke: var(--text-3);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .logs-page {
+    padding: 16px;
+  }
+  
+  .filters-bar {
+    flex-direction: column;
+  }
+  
+  .search-box {
+    width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+  }
+  
+  .logs-table th,
+  .logs-table td {
+    padding: 12px;
+  }
+}

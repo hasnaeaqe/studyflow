@@ -1,0 +1,322 @@
+<div class="student-dashboard">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <span class="logo-text">StudyFlow</span>
+    </div>
+
+    <div class="user-info-sidebar">
+      <div class="user-avatar-large">
+        {{userInitials}}
+      </div>
+      <div class="user-name">{{userName || 'Étudiant'}}</div>
+      <div class="user-level">Niveau {{stats.level}} · {{stats.xpPoints}} XP</div>
+      <div class="xp-progress">
+        <div class="xp-bar" [style.width]="xpProgressPercent + '%'"></div>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Principal</div>
+      <a class="nav-item" [class.active]="activeTab === 'dashboard'" (click)="activeTab = 'dashboard'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        </span>
+        Tableau de bord
+      </a>
+      <a class="nav-item" [class.active]="activeTab === 'subjects'" (click)="activeTab = 'subjects'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
+        </span>
+        Mes matières
+      </a>
+      <a class="nav-item" [class.active]="activeTab === 'schedule'" (click)="activeTab = 'schedule'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        </span>
+        Planning
+      </a>
+      <a class="nav-item" [class.active]="activeTab === 'groups'" (click)="activeTab = 'groups'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </span>
+        Groupes d'étude
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Analytique</div>
+      <a class="nav-item" [class.active]="activeTab === 'stats'" (click)="activeTab = 'stats'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+        </span>
+        Statistiques
+      </a>
+      <a class="nav-item" (click)="showNotifications = !showNotifications">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </span>
+        Notifications
+        <span class="nav-badge" *ngIf="unreadCount > 0">{{unreadCount}}</span>
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Système</div>
+      <a class="nav-item logout-link" (click)="logout()">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </span>
+        Déconnexion
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">{{getTabTitle()}}</div>
+        <div class="topbar-breadcrumb">student / {{activeTab}}</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-generate" (click)="generateSchedule()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Générer planning
+        </button>
+      </div>
+    </div>
+
+    <!-- Notifications Panel (Overlay) -->
+    <div class="notifications-panel" *ngIf="showNotifications">
+      <div class="notif-header">
+        <h4>Notifications</h4>
+        <button class="close-btn" (click)="showNotifications = false">✕</button>
+      </div>
+      <div class="notif-list">
+        <div class="notif-item" *ngFor="let notif of notifications" [class.unread]="!notif.isRead" (click)="markAsRead(notif.id)">
+          <div class="notif-content">
+            <div class="notif-title">{{notif.title}}</div>
+            <div class="notif-body">{{notif.body}}</div>
+            <div class="notif-time">{{notif.createdAt | date:'short'}}</div>
+          </div>
+        </div>
+        <div *ngIf="notifications.length === 0" class="empty-state">Aucune notification</div>
+      </div>
+    </div>
+
+    <div class="content" *ngIf="!isLoading; else loading">
+      
+      <!-- TAB 1: DASHBOARD -->
+      <div *ngIf="activeTab === 'dashboard'">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">{{stats.totalStudyHours}}h</div>
+            <div class="stat-label">Heures d'étude</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{stats.completedSessions}}/{{stats.plannedSessions}}</div>
+            <div class="stat-label">Sessions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{stats.streakDays}}j</div>
+            <div class="stat-label">Série</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{stats.level}}</div>
+            <div class="stat-label">Niveau</div>
+          </div>
+        </div>
+
+        <div class="dashboard-sections">
+          <div class="card upcoming-sessions">
+            <div class="card-header">
+              <h3>Sessions à venir</h3>
+            </div>
+            <div class="session-list">
+              <div class="session-item" *ngFor="let session of upcomingSessions">
+                <div class="session-info">
+                  <div class="session-title-row">
+                    <strong>{{session.title}}</strong>
+                    <span class="priority-tag" [class]="session.priority">{{session.priority}}</span>
+                  </div>
+                  <div class="session-meta">
+                    {{session.subject}} • {{formatDate(session.plannedStart)}} • {{session.duration}} min
+                  </div>
+                </div>
+                <button class="btn-check" (click)="completeSession(session.id)">Terminer</button>
+              </div>
+              <div *ngIf="upcomingSessions.length === 0" class="empty-state">Aucune session planifiée</div>
+            </div>
+          </div>
+
+          <div class="card subjects-progress">
+            <div class="card-header">
+              <h3>Mes matières</h3>
+            </div>
+            <div class="subject-list">
+              <div class="subject-item" *ngFor="let subject of subjects">
+                <div class="subject-info">
+                  <span class="subject-dot" [style.background-color]="subject.color"></span>
+                  <span class="subject-name">{{subject.name}}</span>
+                </div>
+                <div class="subject-progress-container">
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" [style.width]="(subject.progress || 0) + '%'" [style.background-color]="subject.color"></div>
+                  </div>
+                  <span class="progress-text">{{subject.progress || 0}}%</span>
+                </div>
+              </div>
+              <div *ngIf="subjects.length === 0" class="empty-state">Aucune matière ajoutée</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: MATIÈRES -->
+      <div *ngIf="activeTab === 'subjects'">
+        <div class="page-header">
+          <h2>Mes matières</h2>
+          <button class="btn-primary" (click)="showSubjectModal = true">Ajouter une matière</button>
+        </div>
+        <div class="subjects-grid">
+          <div class="subject-card-detailed" *ngFor="let subject of subjects">
+            <div class="subject-accent" [style.background]="subject.color"></div>
+            <div class="subject-content">
+              <h3>{{subject.name}}</h3>
+              <div class="detail-row">
+                <span>Priorité</span>
+                <span class="val">{{subject.priority}}</span>
+              </div>
+              <div class="detail-row">
+                <span>Progression</span>
+                <span class="val">{{subject.progress || 0}}%</span>
+              </div>
+              <div class="subject-actions">
+                <button class="btn-text-delete" (click)="deleteSubject(subject.id)">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="subjects.length === 0" class="empty-state">Aucune matière. Cliquez sur "Ajouter" pour commencer.</div>
+      </div>
+
+      <!-- TAB 3: PLANNING -->
+      <div *ngIf="activeTab === 'schedule'">
+        <div class="page-header">
+          <h2>Planning d'étude</h2>
+        </div>
+        <div class="schedule-placeholder">
+          <div class="placeholder-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M3 10h18" />
+            </svg>
+          </div>
+          <p>Utilisez le bouton "Générer planning" en haut pour créer votre emploi du temps intelligent.</p>
+        </div>
+      </div>
+
+      <!-- TAB 4: GROUPES -->
+      <div *ngIf="activeTab === 'groups'">
+        <div class="page-header">
+          <h2>Groupes d'étude</h2>
+          <button class="btn-primary" (click)="showGroupModal = true">Créer un groupe</button>
+        </div>
+        <div class="groups-grid">
+          <div class="group-card-alt" *ngFor="let group of studyGroups">
+            <div class="group-icon-box">👥</div>
+            <div class="group-info">
+              <h3>{{group.name}}</h3>
+              <p>{{group.description || 'Aucune description fournie'}}</p>
+              <div class="group-footer">
+                <span class="member-count">{{group.memberCount || 0}} membres</span>
+                <button class="btn-join">Rejoindre</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="studyGroups.length === 0" class="empty-state">Aucun groupe disponible actuellement.</div>
+      </div>
+
+      <!-- TAB 5: STATISTIQUES -->
+      <div *ngIf="activeTab === 'stats'">
+        <div class="page-header">
+          <h2>Analyses et Statistiques</h2>
+        </div>
+        <div class="stats-placeholder-grid">
+          <div class="card stat-empty">Graphique de productivité</div>
+          <div class="card stat-empty">Répartition du temps</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-overlay" *ngIf="showSubjectModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Nouvelle matière</h3>
+          <button class="modal-close" (click)="showSubjectModal = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" placeholder="ex: Mathématiques" [(ngModel)]="newSubject.name">
+          </div>
+          <div class="form-group">
+            <label>Priorité</label>
+            <select [(ngModel)]="newSubject.priority">
+              <option value="high">Haute</option>
+              <option value="medium">Moyenne</option>
+              <option value="low">Basse</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="showSubjectModal = false">Annuler</button>
+          <button class="btn-save" (click)="addSubject()">Confirmer</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #loading>
+      <div class="loading-state">Initialisation du dashboard...</div>
+    </ng-template>
+  </main>
+</div>

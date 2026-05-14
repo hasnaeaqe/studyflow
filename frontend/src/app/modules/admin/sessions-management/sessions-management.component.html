@@ -1,0 +1,194 @@
+<div class="sessions-page">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1>Sessions globales</h1>
+      <p class="page-subtitle">Toutes les sessions d'étude de la plateforme</p>
+    </div>
+    <div class="stats-summary">
+      <div class="stat-badge">
+        <span class="stat-dot status-completed"></span>
+        Terminées: <strong>{{getCompletedCount()}}</strong>
+      </div>
+      <div class="stat-badge">
+        <span class="stat-dot status-progress"></span>
+        En cours: <strong>{{getInProgressCount()}}</strong>
+      </div>
+      <div class="stat-badge">
+        <span class="stat-dot status-planned"></span>
+        Planifiées: <strong>{{getPlannedCount()}}</strong>
+      </div>
+      <div class="stat-badge">
+        <span class="stat-dot status-cancelled"></span>
+        Annulées: <strong>{{getCancelledCount()}}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-bar">
+    <div class="search-box">
+  <svg viewBox="0 0 24 24" width="16" height="16">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+  <input 
+    type="text" 
+    placeholder="Rechercher par titre, matière, utilisateur..." 
+    [(ngModel)]="searchTerm"
+    (input)="onSearch()"
+  >
+</div>
+    <select class="filter-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+      <option value="tous">Tous les statuts</option>
+      <option value="planned">Planifiées</option>
+      <option value="in_progress">En cours</option>
+      <option value="completed">Terminées</option>
+      <option value="cancelled">Annulées</option>
+      <option value="missed">Manquées</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="selectedPriority" (change)="applyFilters()">
+      <option value="tous">Toutes priorités</option>
+      <option value="high">Haute priorité</option>
+      <option value="medium">Priorité moyenne</option>
+      <option value="low">Basse priorité</option>
+    </select>
+  </div>
+
+  <!-- Tableau des sessions -->
+  <div class="sessions-table-container" *ngIf="!isLoading; else loading">
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Utilisateur</th>
+          <th>Matière</th>
+          <th>Date / Heure</th>
+          <th>Durée</th>
+          <th>Priorité</th>
+          <th>Statut</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let session of filteredSessions">
+          <td class="cell-title">
+            <div class="session-title">{{session.title}}</div>
+            <div class="session-id">ID: {{session.id | slice:0:8}}...</div>
+          </td>
+          <td class="cell-user">
+            <div class="user-info">
+              <div class="user-avatar-small" [style.background]="'linear-gradient(135deg, var(--accent), var(--green))'">
+                {{getUserInitials(session.user)}}
+              </div>
+              <div>
+                <div class="user-name">{{session.user}}</div>
+                <div class="user-email">{{session.userEmail}}</div>
+              </div>
+            </div>
+          </td>
+          <td class="cell-subject">
+            <span class="subject-tag">{{session.subject}}</span>
+          </td>
+          <td class="cell-datetime">
+            <div class="datetime">{{formatDate(session.plannedStart)}}</div>
+          </td>
+          <td class="cell-duration">
+            <span class="duration">{{session.duration}} min</span>
+          </td>
+          <td class="cell-priority">
+            <span class="priority-badge" [class]="'priority-' + session.priority">
+              {{getPriorityLabel(session.priority)}}
+            </span>
+          </td>
+          <td class="cell-status">
+            <span class="status-badge" [class]="'status-' + session.status">
+              {{getStatusLabel(session.status)}}
+            </span>
+          </td>
+          <td class="cell-actions">
+            <button class="row-btn" (click)="openSessionDetails(session)">Détails</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredSessions.length === 0">
+          <td colspan="8" class="empty-state">
+            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <p>Aucune session trouvée</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Détails -->
+  <div class="modal-overlay" *ngIf="showSessionModal">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3>Détails de la session</h3>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <div class="detail-row">
+            <span class="detail-label">Titre</span>
+            <span class="detail-value">{{currentSession.title}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Matière</span>
+            <span class="detail-value">{{currentSession.subject}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Utilisateur</span>
+            <span class="detail-value">{{currentSession.user}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{currentSession.userEmail}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date et heure</span>
+            <span class="detail-value">{{formatDate(currentSession.plannedStart)}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Fin prévue</span>
+            <span class="detail-value">{{formatDate(currentSession.plannedEnd)}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Durée</span>
+            <span class="detail-value">{{currentSession.duration}} minutes</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Priorité</span>
+            <span class="detail-value">
+              <span class="priority-badge" [class]="'priority-' + currentSession.priority">
+                {{getPriorityLabel(currentSession.priority)}}
+              </span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Statut</span>
+            <span class="detail-value">
+              <span class="status-badge" [class]="'status-' + currentSession.status">
+                {{getStatusLabel(currentSession.status)}}
+              </span>
+            </span>
+          </div>
+          <div class="detail-row" *ngIf="currentSession.description">
+            <span class="detail-label">Description</span>
+            <span class="detail-value">{{currentSession.description}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <div class="loading-state">Chargement des sessions...</div>
+  </ng-template>
+</div>

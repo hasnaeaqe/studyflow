@@ -1,0 +1,130 @@
+<div class="users-page">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1>Gestion des utilisateurs</h1>
+      <p>{{filteredUsers.length}} utilisateur(s) trouvé(s)</p>
+    </div>
+    <button class="btn-add" (click)="openAddModal()">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Ajouter un utilisateur
+    </button>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Rechercher par nom, email..." [(ngModel)]="searchTerm" (input)="onSearch()">
+    </div>
+    <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onSearch()">
+      <option value="tous">Tous les statuts</option>
+      <option value="active">Actif</option>
+      <option value="inactive">Inactif</option>
+      <option value="banned">Banni</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="selectedRole" (change)="onSearch()">
+      <option value="tous">Tous les rôles</option>
+      <option value="user">Utilisateur</option>
+      <option value="admin">Administrateur</option>
+    </select>
+  </div>
+
+  <!-- Tableau des utilisateurs -->
+  <div class="users-table-container" *ngIf="!isLoading; else loading">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Sessions</th>
+          <th>Heures</th>
+          <th>Inscription</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers">
+          <td>
+            <div class="user-info">
+              <div class="user-avatar" [style.background]="'linear-gradient(135deg, var(--accent), var(--green))'">
+                {{getUserInitials(user.firstName, user.lastName)}}
+              </div>
+              <div class="user-details">
+                <div class="user-name">{{user.firstName}} {{user.lastName}}</div>
+                <div class="user-email">{{user.email}}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="stat-value">{{user.sessions}}</span></td>
+          <td><span class="stat-value">{{user.hours}}h</span></td>
+          <td><span class="date-value">{{user.registeredAt | date:'dd/MM/yyyy'}}</span></td>
+          <td>
+            <span class="role-badge" [class.admin]="user.role === 'admin'">
+              {{user.role === 'admin' ? 'Admin' : 'Utilisateur'}}
+            </span>
+          </td>
+          <td><span class="status-pill" [class]="getStatusClass(user.status)">{{user.status}}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn edit" (click)="openEditModal(user)" title="Modifier">✏️</button>
+              <button class="action-btn delete" (click)="deleteUser(user.id, user.firstName)" title="Supprimer">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredUsers.length === 0">
+          <td colspan="7" class="empty-state">
+            <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <p>Aucun utilisateur trouvé</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Ajouter/Modifier -->
+  <div class="modal-overlay" *ngIf="showUserModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>{{isEditingUser ? 'Modifier' : 'Ajouter'}} un utilisateur</h3>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="text" placeholder="Prénom" [(ngModel)]="currentUser.firstName">
+        <input type="text" placeholder="Nom" [(ngModel)]="currentUser.lastName">
+        <input type="email" placeholder="Email" [(ngModel)]="currentUser.email">
+        <input *ngIf="!isEditingUser" type="password" placeholder="Mot de passe" [(ngModel)]="currentUser.password">
+        <select [(ngModel)]="currentUser.role">
+          <option value="user">Utilisateur</option>
+          <option value="admin">Administrateur</option>
+        </select>
+        <select [(ngModel)]="currentUser.status">
+          <option value="active">Actif</option>
+          <option value="inactive">Inactif</option>
+          <option value="banned">Banni</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+        <button class="btn-save" (click)="saveUser()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <ng-template #loading>
+    <div class="loading-state">
+      <div>Chargement des utilisateurs...</div>
+    </div>
+  </ng-template>
+</div>

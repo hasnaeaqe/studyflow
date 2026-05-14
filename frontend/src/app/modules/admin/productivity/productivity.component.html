@@ -1,0 +1,192 @@
+<div class="productivity-page">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1>Productivité</h1>
+      <p class="page-subtitle">Analyse des performances et statistiques d'étude</p>
+    </div>
+    <div class="period-selector">
+      <button class="period-btn" [class.active]="selectedPeriod === 'week'" (click)="selectedPeriod = 'week'; loadData()">Semaine</button>
+      <button class="period-btn" [class.active]="selectedPeriod === 'month'" (click)="selectedPeriod = 'month'; loadData()">Mois</button>
+      <button class="period-btn" [class.active]="selectedPeriod === 'year'" (click)="selectedPeriod = 'year'; loadData()">Année</button>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Taux de complétion</div>
+        <div class="kpi-icon-box bg-blue">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val c-blue">{{globalStats.avgCompletionRate}}%</div>
+      <div class="kpi-stripe" style="background:var(--accent)"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Heures totales</div>
+        <div class="kpi-icon-box bg-green">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val c-green">{{globalStats.totalHours}}h</div>
+      <div class="kpi-stripe" style="background:var(--green)"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Sessions totales</div>
+        <div class="kpi-icon-box bg-amber">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val c-amber">{{globalStats.totalSessions}}</div>
+      <div class="kpi-stripe" style="background:var(--amber)"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-label">Streak moyen</div>
+        <div class="kpi-icon-box bg-red">
+          <svg viewBox="0 0 24 24"><polyline points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val c-red">{{globalStats.avgStreak}}j</div>
+      <div class="kpi-stripe" style="background:var(--red)"></div>
+    </div>
+  </div>
+
+  <!-- Section Graphique et Top Utilisateurs -->
+  <div class="charts-section-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
+    
+    <!-- Activité hebdomadaire -->
+    <div class="card chart-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Activité hebdomadaire</div>
+          <div class="card-sub">Nombre de sessions par jour</div>
+        </div>
+        <div class="period-indicator">
+          <span class="period-dot"></span>
+          Cette semaine
+        </div>
+      </div>
+
+      <div class="bar-chart-wrap">
+        <div class="bar-col" *ngFor="let day of weeklyActivity">
+          <div class="bar-wrapper">
+            <div class="bar" 
+                 [style.height]="getBarHeight(day.sessions)" 
+                 [style.background]="day.sessions > 0 ? 'var(--accent)' : 'var(--dark-4)'"
+                 [style.opacity]="day.sessions > 0 ? '0.8' : '0.3'">
+              <span class="bar-value" *ngIf="day.sessions > 0">{{day.sessions}}</span>
+            </div>
+          </div>
+          <div class="bar-day">{{day.day}}</div>
+          <div class="bar-sessions">{{day.sessions}} session{{day.sessions > 1 ? 's' : ''}}</div>
+        </div>
+      </div>
+
+      <div class="chart-footer">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--accent)"></div>
+          <span>Sessions complétées</span>
+        </div>
+        <div class="total-badge">
+          Total : {{getTotalWeeklySessions()}} sessions
+        </div>
+      </div>
+    </div>
+
+    <!-- Top utilisateurs -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Top utilisateurs</div>
+          <div class="card-sub">Les plus actifs</div>
+        </div>
+      </div>
+      <div class="top-users-list">
+        <div class="top-user-item" *ngFor="let user of topUsers; let i = index">
+          <div class="rank">{{i + 1}}</div>
+          <div class="user-info">
+            <div class="user-name">{{user.name}}</div>
+            <div class="user-stats">{{user.hours}}h • {{user.sessions}} sessions</div>
+          </div>
+          <div class="completion-badge" [class]="getCompletionRateClass(user.completionRate)">
+            {{user.completionRate}}%
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Productivité par matière (Full Width) -->
+<div class="card" style="margin-top: 24px; width: 100%;">
+  <div class="card-head">
+    <div>
+      <div class="card-title">Productivité par matière</div>
+      <div class="card-sub">Statistiques détaillées par module d'étude</div>
+    </div>
+  </div>
+
+  <div class="subjects-table-wrapper">
+    <table class="subjects-table">
+      <thead>
+        <tr>
+          <!-- 1 --> <th>Matière</th>
+          <!-- 2 --> <th>Heures</th>
+          <!-- 3 --> <th>Sessions</th>
+          <!-- 4 --> <th>Taux</th>
+          <!-- 5 --> <th>Progression</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let subject of subjectProductivity">
+          <!-- Col 1: Matière -->
+          <td class="subject-cell">
+            <div class="subject-info">
+              <div class="subject-color" [style.background]="subject.color || '#4f8ef7'"></div>
+              <span class="subject-name">{{subject.name}}</span>
+            </div>
+          </td>
+
+          <!-- Col 2: Heures -->
+          <td class="hours-cell">
+            <span class="val-mono">{{subject.hours || 0}}h</span>
+          </td>
+
+          <!-- Col 3: Sessions -->
+          <td class="sessions-cell">
+            <span class="val-mono">{{subject.sessions || 0}}</span>
+          </td>
+
+          <!-- Col 4: Taux -->
+          <td class="completion-cell">
+            <div class="completion-badge" [class]="getCompletionRateClass(subject.completionRate)">
+              {{subject.completionRate || 0}}%
+            </div>
+          </td>
+
+          <!-- Col 5: Progression (Barre) -->
+          <td class="progress-cell">
+            <div class="progress-wrapper">
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" 
+                     [style.width.%]="subject.completionRate || 0"
+                     [style.background]="subject.color || '#4f8ef7'">
+                </div>
+              </div>
+              <span class="progress-percent">{{subject.completionRate || 0}}%</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+  <ng-template #loading>
+    <div class="loading-state">Chargement des données de productivité...</div>
+  </ng-template>
+</div>
