@@ -142,4 +142,30 @@ export class AuthService {
 
     return user;
   }
+
+  // ← NOUVELLE MÉTHODE
+  async updateProfile(userId: string, data: { firstName: string; lastName: string }) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        updatedAt: new Date()
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        xpPoints: true,
+        level: true,
+        streakDays: true,
+        weeklyGoalHours: true,
+        createdAt: true
+      }
+    });
+ 
+    return user;
+  }
 }
